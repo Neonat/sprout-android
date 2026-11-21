@@ -138,7 +138,7 @@ Plantemon/app/src/main/java/com/g4ng/
 │   ├── BattleHandler.java          State machine driving the turn loop; speed-ordered execution
 │   ├── BattleController.java       Interface for pluggable player/bot decision logic
 │   ├── HumanController.java        Human-side controller (UI drives input; controller is a no-op)
-│   ├── BotController.java          AI controller: random move 87.5% of the time, HealAction 12.5%
+│   ├── BotController.java          Heals below 40% HP when charges remain; otherwise picks a random move
 │   └── PlantFactory.java           Static factory creating Plants from API JSON or saved data
 │
 ├── database/
@@ -233,7 +233,8 @@ P2_MOVE  →  BotController selects action
 PROCESSING
   • compare speed — faster plant acts first
   • firstAction.execute(attacker, defender, defenderAction)
-      damage = max(1, attacker.attack − defender.defenseValue)
+      variation = 0.7 + Math.random() * 0.4
+      damage = max(0, (int)((move.attack − defender.defenseValue * variation) * variation))
       accuracy check: Math.random() * 100 ≤ accuracy
   • check faint → stop if defender dead
   • secondAction.execute() if first attacker still alive
@@ -249,7 +250,13 @@ P1_MOVE  (next turn)  or  END
 
 ### Battle End
 
-When either plant reaches 0 HP, the app plays a slide-down/fade faint animation, then shows a dialog. Both plants' HP and heal counts are **not restored** until the next battle is set up — the UI reads live values during the results display, so restoring early would show wrong numbers.
+When either active plant reaches 0 HP, `BattleHandler.handleEnd()` records the
+winner, restores both gardens to full HP, and resets both players' heal charges.
+`BattleActivity` then shows the turn log and a "Battle Over!" toast. Its HP bars
+read the restored models during the results display.
+
+The separate Expo battle port waits for `restoreAfterBattle()` before restoring
+HP. That behaviour does not apply to this native implementation.
 
 ---
 

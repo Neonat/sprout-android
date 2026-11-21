@@ -1,8 +1,9 @@
 # plantemon-server
 
 Vercel-hosted API that fronts Plant.id and NVIDIA, plus cloud save for the
-Plantemon garden. The keys in [`local.properties`](../Plantemon/local.properties)
-move here — the client never sees them again.
+Plantemon garden. Configure the provider keys documented in the
+[native Android setup](../README.md#api-keys) on this server. Keep them out of
+the Expo client's environment.
 
 ```
 client (Expo)  ──Bearer JWT──▶  this server  ──secret keys──▶  Plant.id / NVIDIA
